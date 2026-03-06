@@ -29,17 +29,14 @@ jobs:
           printf 'DB_NAME=%s\n' "$ENV_DB_NAME" >> .env
           printf 'DB_USER=%s\n' "$ENV_DB_USER" >> .env
           printf 'DB_PASS=%s\n' "$ENV_DB_PASS" >> .env
-          echo "--- .env created ---"
-          cat .env | sed 's/DB_PASS=.*/DB_PASS=***/' 
 
       - name: Deploy via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: ${{ secrets.FTP_HOST }}
+          host: ${{ secrets.FTP_HOST }}
           port: ${{ secrets.FTP_PORT }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local_path: './*'
-          remote_path: '/'
-          sftp_only: true
-          delete_remote_files: false
+          source: ".,!.git,!.github,!.devcontainer"
+          target: "/"
+          overwrite: true
