@@ -103,8 +103,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                 $payuLangMap = ['pl' => 'pl', 'en' => 'en', 'ru' => 'en', 'de' => 'de', 'fr' => 'fr'];
                 $payuLang = $payuLangMap[$currentLang] ?? 'en';
                 
+                $extOrderId = $orderId . '-' . time();
+                
                 $orderData = [
-                    'orderId' => $orderId,
+                    'orderId' => $extOrderId,
                     'description' => 'Feltee Order #' . $orderId,
                     'totalAmount' => (int)($total * 100), // Convert PLN to grosze
                     'customerIp' => payuGetCustomerIp(),
