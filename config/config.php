@@ -44,5 +44,5 @@ if (!defined('CONFIG_LOADED')) {
     define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
 
     define('CURRENCY', 'PLN');
-    define('CURRENCY_SYMBOL', 'zł');
+    define('CURRENCY_SYMBOL', 'zl');
 }

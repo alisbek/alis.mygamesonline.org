@@ -96,7 +96,7 @@ INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
     ('site_email', 'contact@feltee.com'),
     ('site_phone', '+48 XXX XXX XXX'),
     ('currency', 'PLN'),
-    ('currency_symbol', 'zł');
+    ('currency_symbol', 'zl');
 
 -- Insert categories
 INSERT INTO `categories` (`name_ru`, `name_en`, `name_pl`, `slug`) VALUES
