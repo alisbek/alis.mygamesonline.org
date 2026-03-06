@@ -44,7 +44,7 @@ function sanitize($input) {
 }
 
 function formatPrice($price) {
-    return number_format($price, 0, '', ' ') . ' ' . CURRENCY_SYMBOL;
+    return number_format($price, 0, '', ' ') . ' ' . FELTEE_CURRENCY_SYMBOL;
 }
 
 function csrfField() {

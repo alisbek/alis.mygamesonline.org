@@ -42,5 +42,5 @@ if (!defined('DEFAULT_LANG')) define('DEFAULT_LANG', 'pl');
 if (!defined('UPLOAD_PATH')) define('UPLOAD_PATH', __DIR__ . '/../uploads/products/');
 if (!defined('MAX_UPLOAD_SIZE')) define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
 
-if (!defined('CURRENCY')) define('CURRENCY', 'PLN');
-if (!defined('CURRENCY_SYMBOL')) define('CURRENCY_SYMBOL', 'zł');
+if (!defined('FELTEE_CURRENCY')) define('FELTEE_CURRENCY', 'PLN');
+if (!defined('FELTEE_CURRENCY_SYMBOL')) define('FELTEE_CURRENCY_SYMBOL', 'zł');
