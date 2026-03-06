@@ -30,6 +30,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>var SITE_URL = <?= json_encode(SITE_URL) ?>;</script>
 </head>
 <body>
     <header class="header">

@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initCart() {
+    var apiUrl = (typeof SITE_URL !== 'undefined' ? SITE_URL : '') + '/cart-api.php';
+    
     // Remove buttons on cart page
     var removeButtons = document.querySelectorAll('.cart-item-remove');
     removeButtons.forEach(function(btn) {
@@ -22,7 +24,7 @@ function initCart() {
             formData.append('action', 'remove');
             formData.append('index', index);
             
-            fetch('/cart-api.php', {
+            fetch(apiUrl, {
                 method: 'POST',
                 body: formData
             }).then(function(response) {
@@ -59,7 +61,7 @@ function initCart() {
             formData.append('index', index);
             formData.append('quantity', value);
             
-            fetch('/cart-api.php', {
+            fetch(apiUrl, {
                 method: 'POST',
                 body: formData
             }).then(function(response) {

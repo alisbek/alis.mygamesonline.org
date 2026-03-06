@@ -12,7 +12,11 @@ $productIds = array_column($cart, 'id');
 $placeholders = implode(',', array_fill(0, count($productIds), '?'));
 $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
 $stmt->execute($productIds);
-$products = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+$productsRaw = $stmt->fetchAll();
+$products = [];
+foreach ($productsRaw as $row) {
+    $products[$row['id']] = $row;
+}
 
 $cartItems = [];
 $total = 0;

@@ -1,15 +1,29 @@
 <?php
 require_once 'includes/header.php';
 
-$categoryId = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+$categoryParam = isset($_GET['category']) ? trim($_GET['category']) : '';
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
 
 $where = 'WHERE stock > 0';
 $params = [];
+$categoryId = 0;
 
-if ($categoryId > 0) {
-    $where .= ' AND category_id = ?';
-    $params[] = $categoryId;
+if ($categoryParam !== '') {
+    // Support both numeric ID and slug
+    if (ctype_digit($categoryParam)) {
+        $categoryId = (int)$categoryParam;
+        $where .= ' AND category_id = ?';
+        $params[] = $categoryId;
+    } else {
+        $catStmt = $pdo->prepare("SELECT id FROM categories WHERE slug = ?");
+        $catStmt->execute([$categoryParam]);
+        $catRow = $catStmt->fetch();
+        if ($catRow) {
+            $categoryId = (int)$catRow['id'];
+            $where .= ' AND category_id = ?';
+            $params[] = $categoryId;
+        }
+    }
 }
 
 $orderBy = match($sort) {
