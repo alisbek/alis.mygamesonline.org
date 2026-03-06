@@ -4,23 +4,32 @@ $envFile = __DIR__ . '/../.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        if (str_starts_with(trim($line), '#')) continue;
+        $line = trim($line);
+        if (substr($line, 0, 1) === '#') continue;
         if (strpos($line, '=') === false) continue;
-        [$key, $value] = explode('=', $line, 2);
-        $_ENV[trim($key)] = trim($value);
-        putenv(trim($key) . '=' . trim($value));
+        $parts = explode('=', $line, 2);
+        $key = trim($parts[0]);
+        $value = trim($parts[1]);
+        $_ENV[$key] = $value;
+        putenv($key . '=' . $value);
     }
 }
 
 define('SITE_NAME', 'Feltee');
-define('SITE_URL', getenv('SITE_URL') ?: 'https://alis.mygamesonline.org');
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: 3306);
-define('DB_NAME', getenv('DB_NAME') ?: '');
-define('DB_USER', getenv('DB_USER') ?: '');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+$siteUrl = getenv('SITE_URL');
+define('SITE_URL', $siteUrl ? $siteUrl : 'https://alis.mygamesonline.org');
+$dbHost = getenv('DB_HOST');
+define('DB_HOST', $dbHost ? $dbHost : 'localhost');
+$dbPort = getenv('DB_PORT');
+define('DB_PORT', $dbPort ? $dbPort : 3306);
+$dbName = getenv('DB_NAME');
+define('DB_NAME', $dbName ? $dbName : '');
+$dbUser = getenv('DB_USER');
+define('DB_USER', $dbUser ? $dbUser : '');
+$dbPass = getenv('DB_PASS');
+define('DB_PASS', $dbPass ? $dbPass : '');
 
-define('LANGUAGES', ['pl' => 'Polski', 'ru' => 'Русский', 'en' => 'English']);
+define('LANGUAGES', array('pl' => 'Polski', 'ru' => 'Русский', 'en' => 'English'));
 define('DEFAULT_LANG', 'pl');
 
 define('UPLOAD_PATH', __DIR__ . '/../uploads/products/');
