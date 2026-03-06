@@ -4,7 +4,7 @@ require_once 'includes/header.php';
 $stmt = $pdo->query("SELECT * FROM products WHERE featured = 1 AND stock > 0 ORDER BY created_at DESC LIMIT 6");
 $featuredProducts = $stmt->fetchAll();
 
-$stmt = $pdo->query("SELECT * FROM categories ORDER BY name_en");
+$stmt = $pdo->query("SELECT * FROM categories ORDER BY name_" . $currentLang);
 $categories = $stmt->fetchAll();
 ?>
 
@@ -27,7 +27,7 @@ $categories = $stmt->fetchAll();
                     <?php if ($product['image']): ?>
                         <img src="<?= SITE_URL ?>/uploads/products/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name_' . $currentLang]) ?>">
                     <?php else: ?>
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-text-light);">No image</div>
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-text-light);"><?= __('product.no_image') ?></div>
                     <?php endif; ?>
                 </div>
                 <div class="product-info">
@@ -48,13 +48,13 @@ $categories = $stmt->fetchAll();
     <div class="container">
         <div class="about-content">
             <div class="about-text">
-                <h2>Our Story / Nasza Historia</h2>
-                <p>The idea was born from a desire to combine centuries-old nomadic craftsmanship with modern design. We wanted to show the world the beauty of Kyrgyz felting art and create products that bring yurt warmth into contemporary homes.</p>
-                <p>Our seamless felted slippers are our pride - they mold perfectly to the shape of the foot and have no seams, making them particularly comfortable. Natural wool breathes and remains pleasant when warm, provides warmth when cold.</p>
+                <h2><?= __('home.story_title') ?></h2>
+                <p><?= __('home.story_text1') ?></p>
+                <p><?= __('home.story_text2') ?></p>
                 <a href="<?= url('/about.php') ?>" class="btn btn-primary" style="margin-top:20px;"><?= __('nav.about') ?></a>
             </div>
             <div class="about-image" style="border-radius:var(--radius-lg);overflow:hidden;">
-                <img src="https://media.pakamera.net/g/s12775599/1420x0/the-feltee-handcraft-studio_01.jpg" alt="Felting craft" style="width:100%;height:100%;object-fit:cover;">
+                <img src="<?= SITE_URL ?>/uploads/products/feltee-studio-01.jpg" alt="<?= __('about.craft') ?>" style="width:100%;height:100%;object-fit:cover;">
             </div>
         </div>
     </div>
@@ -62,27 +62,27 @@ $categories = $stmt->fetchAll();
 
 <section class="section" style="background:var(--color-bg-alt);">
     <div class="container">
-        <h2 class="section-title">Why Choose Feltee?</h2>
+        <h2 class="section-title"><?= __('home.why_title') ?></h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px;">
             <div style="background:var(--color-white);padding:30px;border-radius:var(--radius-md);text-align:center;">
-                <div style="font-size:2.5rem;margin-bottom:12px;">🧦</div>
-                <h3 style="color:var(--color-primary);margin-bottom:12px;">Seamless Design</h3>
-                <p style="color:var(--color-text-light);">No seams means ultimate comfort. Our slippers mold perfectly to your feet.</p>
+                <div style="font-size:2.5rem;margin-bottom:12px;">&#x1f9e6;</div>
+                <h3 style="color:var(--color-primary);margin-bottom:12px;"><?= __('home.feature_seamless_title') ?></h3>
+                <p style="color:var(--color-text-light);"><?= __('home.feature_seamless_text') ?></p>
             </div>
             <div style="background:var(--color-white);padding:30px;border-radius:var(--radius-md);text-align:center;">
-                <div style="font-size:2.5rem;margin-bottom:12px;">🌿</div>
-                <h3 style="color:var(--color-primary);margin-bottom:12px;">100% Natural Wool</h3>
-                <p style="color:var(--color-text-light);">Thermoregulatory, breathable, and durable. No plastics, no harmful chemicals.</p>
+                <div style="font-size:2.5rem;margin-bottom:12px;">&#x1f33f;</div>
+                <h3 style="color:var(--color-primary);margin-bottom:12px;"><?= __('home.feature_natural_title') ?></h3>
+                <p style="color:var(--color-text-light);"><?= __('home.feature_natural_text') ?></p>
             </div>
             <div style="background:var(--color-white);padding:30px;border-radius:var(--radius-md);text-align:center;">
-                <div style="font-size:2.5rem;margin-bottom:12px;">🏔️</div>
-                <h3 style="color:var(--color-primary);margin-bottom:12px;">Kyrgyz Heritage</h3>
-                <p style="color:var(--color-text-light);">Centuries of nomadic tradition in every product, handmade by skilled artisans.</p>
+                <div style="font-size:2.5rem;margin-bottom:12px;">&#x1f3d4;&#xfe0f;</div>
+                <h3 style="color:var(--color-primary);margin-bottom:12px;"><?= __('home.feature_heritage_title') ?></h3>
+                <p style="color:var(--color-text-light);"><?= __('home.feature_heritage_text') ?></p>
             </div>
             <div style="background:var(--color-white);padding:30px;border-radius:var(--radius-md);text-align:center;">
-                <div style="font-size:2.5rem;margin-bottom:12px;">✋</div>
-                <h3 style="color:var(--color-primary);margin-bottom:12px;">Handcrafted Quality</h3>
-                <p style="color:var(--color-text-light);">Each product is carefully made by hand with attention to every detail.</p>
+                <div style="font-size:2.5rem;margin-bottom:12px;">&#x270b;</div>
+                <h3 style="color:var(--color-primary);margin-bottom:12px;"><?= __('home.feature_handcrafted_title') ?></h3>
+                <p style="color:var(--color-text-light);"><?= __('home.feature_handcrafted_text') ?></p>
             </div>
         </div>
     </div>

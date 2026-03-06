@@ -59,7 +59,7 @@ $total = 0;
                         </div>
                         <p class="cart-item-price"><?= formatPrice($item['price'] * $item['quantity']) ?></p>
                     </div>
-                    <button type="button" class="cart-item-remove" data-index="<?= $item['index'] ?>">Remove</button>
+                    <button type="button" class="cart-item-remove" data-index="<?= $item['index'] ?>"><?= __('cart.remove') ?></button>
                 </div>
                 <?php endforeach; ?>
             </div>

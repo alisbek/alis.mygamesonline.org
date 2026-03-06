@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nameRu = trim($_POST['name_ru'] ?? '');
         $nameEn = trim($_POST['name_en'] ?? '');
         $namePl = trim($_POST['name_pl'] ?? '');
+        $nameDe = trim($_POST['name_de'] ?? '');
+        $nameFr = trim($_POST['name_fr'] ?? '');
         $categoryId = (int)($_POST['category_id'] ?? 0) ?: null;
         $price = (float)($_POST['price'] ?? 0);
         $stock = (int)($_POST['stock'] ?? 0);
@@ -35,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $descriptionRu = trim($_POST['description_ru'] ?? '');
         $descriptionEn = trim($_POST['description_en'] ?? '');
         $descriptionPl = trim($_POST['description_pl'] ?? '');
+        $descriptionDe = trim($_POST['description_de'] ?? '');
+        $descriptionFr = trim($_POST['description_fr'] ?? '');
         $sizes = $_POST['sizes'] ?? [];
         $colors = $_POST['colors'] ?? [];
         
@@ -58,13 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $colorsJson = json_encode($colors);
             
             if ($action === 'add') {
-                $stmt = $pdo->prepare("INSERT INTO products (category_id, name_ru, name_en, name_pl, description_ru, description_en, description_pl, price, sizes, colors, image, stock, featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $descriptionRu, $descriptionEn, $descriptionPl, $price, $sizesJson, $colorsJson, $image, $stock, $featured]);
+                $stmt = $pdo->prepare("INSERT INTO products (category_id, name_ru, name_en, name_pl, name_de, name_fr, description_ru, description_en, description_pl, description_de, description_fr, price, sizes, colors, image, stock, featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $nameDe, $nameFr, $descriptionRu, $descriptionEn, $descriptionPl, $descriptionDe, $descriptionFr, $price, $sizesJson, $colorsJson, $image, $stock, $featured]);
                 $success = 'Product added successfully.';
             } else {
                 $id = (int)$_POST['id'];
-                $stmt = $pdo->prepare("UPDATE products SET category_id=?, name_ru=?, name_en=?, name_pl=?, description_ru=?, description_en=?, description_pl=?, price=?, sizes=?, colors=?, image=?, stock=?, featured=? WHERE id=?");
-                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $descriptionRu, $descriptionEn, $descriptionPl, $price, $sizesJson, $colorsJson, $image, $stock, $featured, $id]);
+                $stmt = $pdo->prepare("UPDATE products SET category_id=?, name_ru=?, name_en=?, name_pl=?, name_de=?, name_fr=?, description_ru=?, description_en=?, description_pl=?, description_de=?, description_fr=?, price=?, sizes=?, colors=?, image=?, stock=?, featured=? WHERE id=?");
+                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $nameDe, $nameFr, $descriptionRu, $descriptionEn, $descriptionPl, $descriptionDe, $descriptionFr, $price, $sizesJson, $colorsJson, $image, $stock, $featured, $id]);
                 $success = 'Product updated successfully.';
                 header('Location: products.php');
                 exit;
@@ -95,6 +99,10 @@ $availableColors = [
     ['name' => 'Blue', 'code' => '#4A6FA5'],
     ['name' => 'Green', 'code' => '#6B8E6B'],
     ['name' => 'Red', 'code' => '#B85450'],
+    ['name' => 'Black', 'code' => '#222222'],
+    ['name' => 'Yellow', 'code' => '#D4A017'],
+    ['name' => 'Purple', 'code' => '#6B3FA0'],
+    ['name' => 'Dark Purple', 'code' => '#4B0082'],
 ];
 
 $menuItems = [
@@ -161,16 +169,27 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     
                     <div class="admin-form-row">
                         <div class="form-group">
-                            <label>Name (Russian) *</label>
-                            <input type="text" name="name_ru" required value="<?= htmlspecialchars($editProduct['name_ru'] ?? '') ?>">
+                            <label>Name (Polish) *</label>
+                            <input type="text" name="name_pl" required value="<?= htmlspecialchars($editProduct['name_pl'] ?? '') ?>">
                         </div>
                         <div class="form-group">
                             <label>Name (English) *</label>
                             <input type="text" name="name_en" required value="<?= htmlspecialchars($editProduct['name_en'] ?? '') ?>">
                         </div>
                         <div class="form-group">
-                            <label>Name (Polish) *</label>
-                            <input type="text" name="name_pl" required value="<?= htmlspecialchars($editProduct['name_pl'] ?? '') ?>">
+                            <label>Name (Russian) *</label>
+                            <input type="text" name="name_ru" required value="<?= htmlspecialchars($editProduct['name_ru'] ?? '') ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-row">
+                        <div class="form-group">
+                            <label>Name (German)</label>
+                            <input type="text" name="name_de" value="<?= htmlspecialchars($editProduct['name_de'] ?? '') ?>">
+                        </div>
+                        <div class="form-group">
+                            <label>Name (French)</label>
+                            <input type="text" name="name_fr" value="<?= htmlspecialchars($editProduct['name_fr'] ?? '') ?>">
                         </div>
                     </div>
                     
@@ -187,7 +206,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Price (KGS) *</label>
+                            <label>Price (PLN) *</label>
                             <input type="number" name="price" step="0.01" min="0" required value="<?= $editProduct['price'] ?? '' ?>">
                         </div>
                         <div class="form-group">
@@ -197,16 +216,24 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     </div>
                     
                     <div class="form-group">
-                        <label>Description (Russian)</label>
-                        <textarea name="description_ru" rows="3"><?= htmlspecialchars($editProduct['description_ru'] ?? '') ?></textarea>
+                        <label>Description (Polish)</label>
+                        <textarea name="description_pl" rows="3"><?= htmlspecialchars($editProduct['description_pl'] ?? '') ?></textarea>
                     </div>
                     <div class="form-group">
                         <label>Description (English)</label>
                         <textarea name="description_en" rows="3"><?= htmlspecialchars($editProduct['description_en'] ?? '') ?></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Description (Polish)</label>
-                        <textarea name="description_pl" rows="3"><?= htmlspecialchars($editProduct['description_pl'] ?? '') ?></textarea>
+                        <label>Description (Russian)</label>
+                        <textarea name="description_ru" rows="3"><?= htmlspecialchars($editProduct['description_ru'] ?? '') ?></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Description (German)</label>
+                        <textarea name="description_de" rows="3"><?= htmlspecialchars($editProduct['description_de'] ?? '') ?></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Description (French)</label>
+                        <textarea name="description_fr" rows="3"><?= htmlspecialchars($editProduct['description_fr'] ?? '') ?></textarea>
                     </div>
                     
                     <div class="form-group">

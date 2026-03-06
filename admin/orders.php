@@ -36,13 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 }
 
 $filter = $_GET['filter'] ?? 'all';
-$where = '1=1';
+$allowedStatuses = ['new', 'processing', 'shipped', 'completed', 'cancelled'];
 
-if ($filter !== 'all') {
-    $where = "status = '" . $filter . "'";
+if ($filter !== 'all' && in_array($filter, $allowedStatuses)) {
+    $stmt = $pdo->prepare("SELECT * FROM orders WHERE status = ? ORDER BY created_at DESC");
+    $stmt->execute([$filter]);
+} else {
+    $filter = 'all';
+    $stmt = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC");
 }
-
-$stmt = $pdo->query("SELECT * FROM orders WHERE $where ORDER BY created_at DESC");
 $orders = $stmt->fetchAll();
 
 $menuItems = [

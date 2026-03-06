@@ -46,9 +46,9 @@ $categories = $stmt->fetchAll();
             <div class="filter-group">
                 <label><?= __('products.filter.price') ?></label>
                 <select name="sort" id="filter-sort">
-                    <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Newest</option>
-                    <option value="price_low" <?= $sort === 'price_low' ? 'selected' : '' ?>>Price: Low to High</option>
-                    <option value="price_high" <?= $sort === 'price_high' ? 'selected' : '' ?>>Price: High to Low</option>
+                    <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>><?= __('products.sort_newest') ?></option>
+                    <option value="price_low" <?= $sort === 'price_low' ? 'selected' : '' ?>><?= __('products.sort_price_low') ?></option>
+                    <option value="price_high" <?= $sort === 'price_high' ? 'selected' : '' ?>><?= __('products.sort_price_high') ?></option>
                 </select>
             </div>
         </form>
@@ -61,7 +61,7 @@ $categories = $stmt->fetchAll();
                         <?php if ($product['image']): ?>
                             <img src="<?= SITE_URL ?>/uploads/products/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name_' . $currentLang]) ?>">
                         <?php else: ?>
-                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-text-light);">No image</div>
+                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-text-light);"><?= __('product.no_image') ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="product-info">

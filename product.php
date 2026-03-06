@@ -25,7 +25,7 @@ $gallery = json_decode($product['gallery'], true) ?: [];
                     <?php if ($product['image']): ?>
                         <img src="<?= SITE_URL ?>/uploads/products/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name_' . $currentLang]) ?>" id="main-image">
                     <?php else: ?>
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-text-light);">No image</div>
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-text-light);"><?= __('product.no_image') ?></div>
                     <?php endif; ?>
                 </div>
                 <?php if ($gallery): ?>

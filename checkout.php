@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
     $notes = sanitize($_POST['notes'] ?? '');
     
     if (empty($name) || empty($phone) || empty($delivery) || empty($payment)) {
-        $error = 'Please fill in all required fields.';
+        $error = __('checkout.error_required');
     } else {
         try {
             $stmt = $pdo->prepare("INSERT INTO orders (customer_name, phone, email, address, city, postal_code, delivery_method, payment_method, total, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')");
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
             exit;
             
         } catch (PDOException $e) {
-            $error = 'An error occurred. Please try again.';
+            $error = __('checkout.error_generic');
         }
     }
 }
@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                     <div class="radio-group">
                         <label class="radio-label">
                             <input type="radio" name="delivery" value="pickup" required <?= ($_POST['delivery'] ?? '') === 'pickup' ? 'checked' : '' ?>>
-                            <?= __('checkout.delivery.pickup') ?> - Free
+                            <?= __('checkout.delivery.pickup') ?> - <?= __('checkout.free') ?>
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="delivery" value="courier" <?= ($_POST['delivery'] ?? '') === 'courier' ? 'checked' : '' ?>>
@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                     <span><?= formatPrice($total) ?></span>
                 </div>
                 
-                <a href="<?= url('/cart.php') ?>" style="display:block;text-align:center;margin-top:16px;">Edit cart</a>
+                <a href="<?= url('/cart.php') ?>" style="display:block;text-align:center;margin-top:16px;"><?= __('checkout.edit_cart') ?></a>
             </div>
         </div>
     </div>

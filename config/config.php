@@ -4,7 +4,7 @@ ob_start();
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-date_default_timezone_set('Asia/Bishkek');
+date_default_timezone_set('Europe/Warsaw');
 
 // Load .env file
 $envFile = __DIR__ . '/../.env';
@@ -36,7 +36,7 @@ if (!defined('DB_USER')) define('DB_USER', $dbUser ? $dbUser : '');
 $dbPass = getenv('DB_PASS');
 if (!defined('DB_PASS')) define('DB_PASS', $dbPass ? $dbPass : '');
 
-if (!defined('LANGUAGES')) define('LANGUAGES', array('pl' => 'Polski', 'ru' => 'Русский', 'en' => 'English'));
+if (!defined('LANGUAGES')) define('LANGUAGES', array('pl' => 'Polski', 'ru' => 'Русский', 'en' => 'English', 'de' => 'Deutsch', 'fr' => 'Français'));
 if (!defined('DEFAULT_LANG')) define('DEFAULT_LANG', 'pl');
 
 if (!defined('UPLOAD_PATH')) define('UPLOAD_PATH', __DIR__ . '/../uploads/products/');

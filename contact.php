@@ -10,9 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
     $message = sanitize($_POST['message'] ?? '');
     
     if (empty($name) || empty($email) || empty($message)) {
-        $error = 'Please fill in all fields.';
+        $error = __('contact.error_fields');
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Please enter a valid email address.';
+        $error = __('contact.error_email');
     } else {
         $subject = "Contact Form - Feltee";
         $body = "Name: $name\nEmail: $email\n\nMessage:\n$message";
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
         if (mail('support@feltee.kg', $subject, $body, $headers)) {
             $success = true;
         } else {
-            $error = 'Failed to send message. Please try again.';
+            $error = __('contact.error_send');
         }
     }
 }
@@ -34,16 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
         
         <div class="contact-info">
             <div class="contact-info-item">
-                <h3>Pakamera</h3>
+                <h3><?= __('contact.label_pakamera') ?></h3>
                 <p><a href="https://www.pakamera.pl/the-feltee-handcraft-studio-0_s12775599.htm" target="_blank">pakamera.pl/feltee</a></p>
             </div>
             <div class="contact-info-item">
-                <h3>Email</h3>
+                <h3><?= __('contact.label_email') ?></h3>
                 <p>contact@feltee.com</p>
             </div>
             <div class="contact-info-item">
-                <h3>Studio</h3>
-                <p>Kyrgyzstan / Poland</p>
+                <h3><?= __('contact.label_studio') ?></h3>
+                <p><?= __('contact.studio_location') ?></p>
             </div>
         </div>
         

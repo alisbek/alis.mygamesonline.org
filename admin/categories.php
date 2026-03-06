@@ -28,19 +28,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nameRu = trim($_POST['name_ru'] ?? '');
         $nameEn = trim($_POST['name_en'] ?? '');
         $namePl = trim($_POST['name_pl'] ?? '');
+        $nameDe = trim($_POST['name_de'] ?? '');
+        $nameFr = trim($_POST['name_fr'] ?? '');
         $slug = trim($_POST['slug'] ?? '');
         
         if (empty($nameRu) || empty($nameEn) || empty($namePl) || empty($slug)) {
-            $error = 'Please fill in all fields.';
+            $error = 'Please fill in all required fields.';
         } else {
             if ($action === 'add') {
-                $stmt = $pdo->prepare("INSERT INTO categories (name_ru, name_en, name_pl, slug) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$nameRu, $nameEn, $namePl, $slug]);
+                $stmt = $pdo->prepare("INSERT INTO categories (name_ru, name_en, name_pl, name_de, name_fr, slug) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$nameRu, $nameEn, $namePl, $nameDe, $nameFr, $slug]);
                 $success = 'Category added successfully.';
             } else {
                 $id = (int)$_POST['id'];
-                $stmt = $pdo->prepare("UPDATE categories SET name_ru=?, name_en=?, name_pl=?, slug=? WHERE id=?");
-                $stmt->execute([$nameRu, $nameEn, $namePl, $slug, $id]);
+                $stmt = $pdo->prepare("UPDATE categories SET name_ru=?, name_en=?, name_pl=?, name_de=?, name_fr=?, slug=? WHERE id=?");
+                $stmt->execute([$nameRu, $nameEn, $namePl, $nameDe, $nameFr, $slug, $id]);
                 $success = 'Category updated successfully.';
                 header('Location: categories.php');
                 exit;
@@ -123,22 +125,33 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     
                     <div class="admin-form-row">
                         <div class="form-group">
-                            <label>Name (Russian) *</label>
-                            <input type="text" name="name_ru" required value="<?= htmlspecialchars($editCategory['name_ru'] ?? '') ?>">
+                            <label>Name (Polish) *</label>
+                            <input type="text" name="name_pl" required value="<?= htmlspecialchars($editCategory['name_pl'] ?? '') ?>">
                         </div>
                         <div class="form-group">
                             <label>Name (English) *</label>
                             <input type="text" name="name_en" required value="<?= htmlspecialchars($editCategory['name_en'] ?? '') ?>">
                         </div>
                         <div class="form-group">
-                            <label>Name (Polish) *</label>
-                            <input type="text" name="name_pl" required value="<?= htmlspecialchars($editCategory['name_pl'] ?? '') ?>">
+                            <label>Name (Russian) *</label>
+                            <input type="text" name="name_ru" required value="<?= htmlspecialchars($editCategory['name_ru'] ?? '') ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-row">
+                        <div class="form-group">
+                            <label>Name (German)</label>
+                            <input type="text" name="name_de" value="<?= htmlspecialchars($editCategory['name_de'] ?? '') ?>">
+                        </div>
+                        <div class="form-group">
+                            <label>Name (French)</label>
+                            <input type="text" name="name_fr" value="<?= htmlspecialchars($editCategory['name_fr'] ?? '') ?>">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label>Slug (URL) *</label>
-                        <input type="text" name="slug" required value="<?= htmlspecialchars($editCategory['slug'] ?? '') ?>" placeholder="e.g., women, men, children">
+                        <input type="text" name="slug" required value="<?= htmlspecialchars($editCategory['slug'] ?? '') ?>" placeholder="e.g., slippers, boots, bags">
                         <small style="color:var(--color-text-light);">Used in URLs. Lowercase, no spaces.</small>
                     </div>
                     
