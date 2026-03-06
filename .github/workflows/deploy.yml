@@ -15,16 +15,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create .env file
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          ENV_DB_HOST: ${{ secrets.DB_HOST }}
+          ENV_DB_PORT: ${{ secrets.DB_PORT }}
+          ENV_DB_NAME: ${{ secrets.DB_NAME }}
+          ENV_DB_USER: ${{ secrets.DB_USER }}
+          ENV_DB_PASS: ${{ secrets.DB_PASS }}
         run: |
-          cat > .env << 'ENVEOF'
-          SITE_URL=${{ secrets.SITE_URL }}
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_PORT=${{ secrets.DB_PORT }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASS=${{ secrets.DB_PASS }}
-          ENVEOF
-          sed -i 's/^[[:space:]]*//' .env
+          printf 'SITE_URL=%s\n' "$SITE_URL" > .env
+          printf 'DB_HOST=%s\n' "$ENV_DB_HOST" >> .env
+          printf 'DB_PORT=%s\n' "$ENV_DB_PORT" >> .env
+          printf 'DB_NAME=%s\n' "$ENV_DB_NAME" >> .env
+          printf 'DB_USER=%s\n' "$ENV_DB_USER" >> .env
+          printf 'DB_PASS=%s\n' "$ENV_DB_PASS" >> .env
+          echo "--- .env created ---"
+          cat .env | sed 's/DB_PASS=.*/DB_PASS=***/' 
 
       - name: Deploy via SFTP
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
