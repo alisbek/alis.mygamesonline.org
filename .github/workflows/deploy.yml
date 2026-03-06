@@ -30,13 +30,24 @@ jobs:
           printf 'DB_USER=%s\n' "$ENV_DB_USER" >> .env
           printf 'DB_PASS=%s\n' "$ENV_DB_PASS" >> .env
 
-      - name: Deploy via SFTP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy main files via SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
-          host: ${{ secrets.FTP_HOST }}
+          server: ${{ secrets.FTP_HOST }}
           port: ${{ secrets.FTP_PORT }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          source: ".,!.git,!.github,!.devcontainer"
-          target: "/"
-          overwrite: true
+          local_path: './*'
+          remote_path: '/'
+          sftp_only: true
+          delete_remote_files: false
+
+      - name: Upload dotfiles via SFTP
+        run: |
+          sudo apt-get install -y sshpass > /dev/null 2>&1
+          export SSHPASS='${{ secrets.FTP_PASSWORD }}'
+          sshpass -e sftp -o StrictHostKeyChecking=no -P ${{ secrets.FTP_PORT }} ${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }} <<SFTP
+          put .env /
+          put .htaccess /
+          bye
+          SFTP
