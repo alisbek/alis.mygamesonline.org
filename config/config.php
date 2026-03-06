@@ -44,3 +44,15 @@ if (!defined('MAX_UPLOAD_SIZE')) define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
 
 if (!defined('FELTEE_CURRENCY')) define('FELTEE_CURRENCY', 'PLN');
 if (!defined('FELTEE_CURRENCY_SYMBOL')) define('FELTEE_CURRENCY_SYMBOL', 'zł');
+
+// PayU Payment Gateway
+$payuPosId = getenv('PAYU_POS_ID');
+if (!defined('PAYU_POS_ID')) define('PAYU_POS_ID', $payuPosId ? $payuPosId : '');
+$payuMd5Key = getenv('PAYU_MD5_KEY');
+if (!defined('PAYU_MD5_KEY')) define('PAYU_MD5_KEY', $payuMd5Key ? $payuMd5Key : '');
+$payuClientId = getenv('PAYU_CLIENT_ID');
+if (!defined('PAYU_CLIENT_ID')) define('PAYU_CLIENT_ID', $payuClientId ? $payuClientId : '');
+$payuClientSecret = getenv('PAYU_CLIENT_SECRET');
+if (!defined('PAYU_CLIENT_SECRET')) define('PAYU_CLIENT_SECRET', $payuClientSecret ? $payuClientSecret : '');
+$payuBaseUrl = getenv('PAYU_BASE_URL');
+if (!defined('PAYU_BASE_URL')) define('PAYU_BASE_URL', $payuBaseUrl ? $payuBaseUrl : 'https://secure.snd.payu.com');

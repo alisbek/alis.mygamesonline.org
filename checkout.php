@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/header.php';
+require_once 'includes/payu.php';
 
 $cart = getCart();
 
@@ -50,11 +51,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
     $payment = sanitize($_POST['payment'] ?? '');
     $notes = sanitize($_POST['notes'] ?? '');
     
+    // Validate required fields
     if (empty($name) || empty($phone) || empty($delivery) || empty($payment)) {
+        $error = __('checkout.error_required');
+    } elseif (!in_array($payment, ['cash', 'bank_transfer', 'payu'])) {
         $error = __('checkout.error_required');
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO orders (customer_name, phone, email, address, city, postal_code, delivery_method, payment_method, total, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')");
+            // Wrap order creation in a transaction
+            $pdo->beginTransaction();
+            
+            $stmt = $pdo->prepare("INSERT INTO orders (customer_name, phone, email, address, city, postal_code, delivery_method, payment_method, payment_status, total, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, 'new')");
             $stmt->execute([$name, $phone, $email, $address, $city, $postal, $delivery, $payment, $total, $notes]);
             
             $orderId = $pdo->lastInsertId();
@@ -73,37 +80,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                 ]);
             }
             
-            $subject = "New Order #$orderId - Feltee";
-            $body = "New order received!\n\n";
-            $body .= "Order #: $orderId\n";
-            $body .= "Customer: $name\n";
-            $body .= "Phone: $phone\n";
-            $body .= "Email: $email\n";
-            $body .= "Address: $address, $city $postal\n";
-            $body .= "Delivery: $delivery\n";
-            $body .= "Payment: $payment\n";
-            $body .= "Total: " . formatPrice($total) . "\n\n";
-            $body .= "Items:\n";
+            $pdo->commit();
             
-            foreach ($cartItems as $item) {
-                $body .= "- {$item['name']} (Size: {$item['size']}, Color: {$item['color']}) x{$item['quantity']} = " . formatPrice($item['price'] * $item['quantity']) . "\n";
+            // If PayU, create PayU order and redirect
+            if ($payment === 'payu') {
+                // Build PayU products array (prices in grosze)
+                $payuProducts = [];
+                foreach ($cartItems as $item) {
+                    $payuProducts[] = [
+                        'name' => $item['name'],
+                        'unitPrice' => (string)((int)($item['price'] * 100)),
+                        'quantity' => (string)$item['quantity'],
+                    ];
+                }
+                
+                // Parse buyer name into first/last
+                $nameParts = explode(' ', $name, 2);
+                $firstName = $nameParts[0];
+                $lastName = $nameParts[1] ?? '';
+                
+                // Map current language to PayU language codes
+                $payuLangMap = ['pl' => 'pl', 'en' => 'en', 'ru' => 'en', 'de' => 'de', 'fr' => 'fr'];
+                $payuLang = $payuLangMap[$currentLang] ?? 'en';
+                
+                $orderData = [
+                    'orderId' => $orderId,
+                    'description' => 'Feltee Order #' . $orderId,
+                    'totalAmount' => (int)($total * 100), // Convert PLN to grosze
+                    'customerIp' => payuGetCustomerIp(),
+                    'buyer' => [
+                        'email' => $email ?: 'customer@feltee.com',
+                        'phone' => $phone,
+                        'firstName' => $firstName,
+                        'lastName' => $lastName,
+                        'language' => $payuLang,
+                    ],
+                    'products' => $payuProducts,
+                    'notifyUrl' => SITE_URL . '/payu-notify.php',
+                    'continueUrl' => url('/order-success.php?id=' . $orderId),
+                ];
+                
+                $result = payuCreateOrder($orderData);
+                
+                if ($result && !empty($result['redirectUri'])) {
+                    // Save PayU order ID to our database
+                    $stmt = $pdo->prepare("UPDATE orders SET payu_order_id = ? WHERE id = ?");
+                    $stmt->execute([$result['orderId'], $orderId]);
+                    
+                    // Clear cart
+                    unset($_SESSION['cart']);
+                    
+                    // Redirect to PayU payment page
+                    header('Location: ' . $result['redirectUri']);
+                    exit;
+                } else {
+                    // PayU API failed — mark order as failed, show error
+                    $stmt = $pdo->prepare("UPDATE orders SET payment_status = 'failed' WHERE id = ?");
+                    $stmt->execute([$orderId]);
+                    $error = __('checkout.error_payu');
+                }
+            } else {
+                // Offline payment (cash / bank_transfer) — standard flow
+                // Send notification email
+                $subject = "New Order #$orderId - Feltee";
+                $body = "New order received!\n\n";
+                $body .= "Order #: $orderId\n";
+                $body .= "Customer: $name\n";
+                $body .= "Phone: $phone\n";
+                $body .= "Email: $email\n";
+                $body .= "Address: $address, $city $postal\n";
+                $body .= "Delivery: $delivery\n";
+                $body .= "Payment: $payment\n";
+                $body .= "Total: " . formatPrice($total) . "\n\n";
+                $body .= "Items:\n";
+                
+                foreach ($cartItems as $item) {
+                    $body .= "- {$item['name']} (Size: {$item['size']}, Color: {$item['color']}) x{$item['quantity']} = " . formatPrice($item['price'] * $item['quantity']) . "\n";
+                }
+                
+                if ($notes) {
+                    $body .= "\nNotes: $notes\n";
+                }
+                
+                $headers = "From: noreply@alis.mygamesonline.org\r\n";
+                $headers .= "Reply-To: $email\r\n";
+                
+                @mail('support@feltee.kg', $subject, $body, $headers);
+                
+                unset($_SESSION['cart']);
+                
+                header('Location: ' . url('/order-success.php?id=' . $orderId));
+                exit;
             }
-            
-            if ($notes) {
-                $body .= "\nNotes: $notes\n";
-            }
-            
-            $headers = "From: noreply@alis.mygamesonline.org\r\n";
-            $headers .= "Reply-To: $email\r\n";
-            
-            mail('support@feltee.kg', $subject, $body, $headers);
-            
-            unset($_SESSION['cart']);
-            
-            header('Location: ' . url('/order-success.php?id=' . $orderId));
-            exit;
             
         } catch (PDOException $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Checkout error: " . $e->getMessage());
             $error = __('checkout.error_generic');
         }
     }
@@ -181,13 +255,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                 <div class="form-group">
                     <label><?= __('checkout.payment') ?> *</label>
                     <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="payment" value="cash" required <?= ($_POST['payment'] ?? '') === 'cash' ? 'checked' : '' ?>>
-                            <?= __('checkout.payment.cash') ?>
+                        <label class="radio-label payment-option">
+                            <input type="radio" name="payment" value="payu" required <?= ($_POST['payment'] ?? '') === 'payu' ? 'checked' : '' ?>>
+                            <span class="payment-label">
+                                <?= __('checkout.payment.payu') ?>
+                                <small class="payment-desc"><?= __('checkout.payment.payu_desc') ?></small>
+                            </span>
                         </label>
-                        <label class="radio-label">
+                        <label class="radio-label payment-option">
                             <input type="radio" name="payment" value="bank_transfer" <?= ($_POST['payment'] ?? '') === 'bank_transfer' ? 'checked' : '' ?>>
-                            <?= __('checkout.payment.bank') ?>
+                            <span class="payment-label"><?= __('checkout.payment.bank') ?></span>
+                        </label>
+                        <label class="radio-label payment-option">
+                            <input type="radio" name="payment" value="cash" <?= ($_POST['payment'] ?? '') === 'cash' ? 'checked' : '' ?>>
+                            <span class="payment-label"><?= __('checkout.payment.cash') ?></span>
                         </label>
                     </div>
                 </div>

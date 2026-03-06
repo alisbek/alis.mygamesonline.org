@@ -6,6 +6,9 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     RewriteEngine On
     RewriteBase /
     
+    # PayU webhook endpoint - skip language rewriting (machine-to-machine)
+    RewriteRule ^payu-notify\.php$ - [L]
+    
     # Language prefix with path: /en/products.php -> products.php?lang=en
     RewriteCond %{REQUEST_URI} ^/([a-z]{2})/(.+)$
     RewriteRule ^([a-z]{2})/(.+)$ $2?lang=$1 [L,QSA]

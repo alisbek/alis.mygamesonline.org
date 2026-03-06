@@ -22,6 +22,11 @@ jobs:
           ENV_DB_NAME: ${{ secrets.DB_NAME }}
           ENV_DB_USER: ${{ secrets.DB_USER }}
           ENV_DB_PASS: ${{ secrets.DB_PASS }}
+          PAYU_POS_ID: ${{ secrets.PAYU_POS_ID }}
+          PAYU_MD5_KEY: ${{ secrets.PAYU_MD5_KEY }}
+          PAYU_CLIENT_ID: ${{ secrets.PAYU_CLIENT_ID }}
+          PAYU_CLIENT_SECRET: ${{ secrets.PAYU_CLIENT_SECRET }}
+          PAYU_BASE_URL: ${{ secrets.PAYU_BASE_URL }}
         run: |
           printf 'SITE_URL=%s\n' "$SITE_URL" > .env
           printf 'DB_HOST=%s\n' "$ENV_DB_HOST" >> .env
@@ -29,6 +34,11 @@ jobs:
           printf 'DB_NAME=%s\n' "$ENV_DB_NAME" >> .env
           printf 'DB_USER=%s\n' "$ENV_DB_USER" >> .env
           printf 'DB_PASS=%s\n' "$ENV_DB_PASS" >> .env
+          printf 'PAYU_POS_ID=%s\n' "$PAYU_POS_ID" >> .env
+          printf 'PAYU_MD5_KEY=%s\n' "$PAYU_MD5_KEY" >> .env
+          printf 'PAYU_CLIENT_ID=%s\n' "$PAYU_CLIENT_ID" >> .env
+          printf 'PAYU_CLIENT_SECRET=%s\n' "$PAYU_CLIENT_SECRET" >> .env
+          printf 'PAYU_BASE_URL=%s\n' "$PAYU_BASE_URL" >> .env
 
       - name: Deploy main files via SFTP
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4

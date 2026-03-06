@@ -35,6 +35,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_payment_status'])) {
+    $orderId = (int)$_POST['order_id'];
+    $paymentStatus = $_POST['payment_status'];
+    $allowedPayStatuses = ['pending', 'paid', 'failed', 'refunded'];
+    
+    if (in_array($paymentStatus, $allowedPayStatuses)) {
+        $stmt = $pdo->prepare("UPDATE orders SET payment_status = ? WHERE id = ?");
+        $stmt->execute([$paymentStatus, $orderId]);
+    }
+    
+    header('Location: orders.php?id=' . $orderId . '&updated=1');
+    exit;
+}
+
 $filter = $_GET['filter'] ?? 'all';
 $allowedStatuses = ['new', 'processing', 'shipped', 'completed', 'cancelled'];
 
@@ -112,6 +126,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         <h3 style="margin:24px 0 16px;">Order Details</h3>
                         <p><strong>Delivery:</strong> <?= ucfirst($viewOrder['delivery_method']) ?></p>
                         <p><strong>Payment:</strong> <?= ucfirst(str_replace('_', ' ', $viewOrder['payment_method'])) ?></p>
+                        <p><strong>Payment Status:</strong> <span class="status-badge status-<?= $viewOrder['payment_status'] ?? 'pending' ?>"><?= ucfirst($viewOrder['payment_status'] ?? 'pending') ?></span></p>
+                        <?php if (!empty($viewOrder['payu_order_id'])): ?>
+                        <p><strong>PayU Order ID:</strong> <?= htmlspecialchars($viewOrder['payu_order_id']) ?></p>
+                        <?php endif; ?>
                         <p><strong>Total:</strong> <?= formatPrice($viewOrder['total']) ?></p>
                         <?php if ($viewOrder['notes']): ?>
                         <p><strong>Notes:</strong> <?= nl2br(htmlspecialchars($viewOrder['notes'])) ?></p>
@@ -158,6 +176,20 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
                         </form>
                         
+                        <h3 style="margin:24px 0 16px;">Update Payment Status</h3>
+                        <form method="post">
+                            <input type="hidden" name="order_id" value="<?= $viewOrder['id'] ?>">
+                            <div class="form-group">
+                                <select name="payment_status" style="width:auto;">
+                                    <option value="pending" <?= ($viewOrder['payment_status'] ?? 'pending') === 'pending' ? 'selected' : '' ?>>Pending</option>
+                                    <option value="paid" <?= ($viewOrder['payment_status'] ?? '') === 'paid' ? 'selected' : '' ?>>Paid</option>
+                                    <option value="failed" <?= ($viewOrder['payment_status'] ?? '') === 'failed' ? 'selected' : '' ?>>Failed</option>
+                                    <option value="refunded" <?= ($viewOrder['payment_status'] ?? '') === 'refunded' ? 'selected' : '' ?>>Refunded</option>
+                                </select>
+                            </div>
+                            <button type="submit" name="update_payment_status" class="btn btn-primary">Update Payment Status</button>
+                        </form>
+                        
                         <p style="margin-top:24px;color:var(--color-text-light);">
                             <strong>Created:</strong> <?= date('F j, Y g:i A', strtotime($viewOrder['created_at'])) ?>
                         </p>
@@ -186,6 +218,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             <th>Phone</th>
                             <th>Total</th>
                             <th>Payment</th>
+                            <th>Pay Status</th>
                             <th>Status</th>
                             <th>Date</th>
                             <th>Actions</th>
@@ -199,6 +232,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             <td><?= htmlspecialchars($order['phone']) ?></td>
                             <td><?= formatPrice($order['total']) ?></td>
                             <td><?= ucfirst(str_replace('_', ' ', $order['payment_method'])) ?></td>
+                            <td><span class="status-badge status-<?= $order['payment_status'] ?? 'pending' ?>"><?= ucfirst($order['payment_status'] ?? 'pending') ?></span></td>
                             <td><span class="status-badge status-<?= $order['status'] ?>"><?= ucfirst($order['status']) ?></span></td>
                             <td><?= date('M j, Y', strtotime($order['created_at'])) ?></td>
                             <td><a href="?id=<?= $order['id'] ?>" class="btn btn-sm btn-secondary">View</a></td>

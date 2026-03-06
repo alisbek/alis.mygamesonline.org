@@ -1066,6 +1066,70 @@ button {
     margin-bottom: 24px;
 }
 
+/* Payment status icons on order success page */
+.payment-status-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin: 0 auto 24px;
+    color: #fff;
+}
+
+.payment-status-paid {
+    background: var(--color-success);
+}
+
+.payment-status-pending {
+    background: #e6a800;
+}
+
+.payment-status-failed {
+    background: var(--color-error);
+}
+
+/* Payment option styling on checkout */
+.payment-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.payment-label {
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    margin-top: 2px;
+}
+
+/* Payment status badges (admin) */
+.status-badge.status-paid {
+    background: var(--color-success);
+    color: #fff;
+}
+
+.status-badge.status-pending {
+    background: #e6a800;
+    color: #fff;
+}
+
+.status-badge.status-failed {
+    background: var(--color-error);
+    color: #fff;
+}
+
+.status-badge.status-refunded {
+    background: #6c757d;
+    color: #fff;
+}
+
 .about-page,
 .contact-page {
     padding: 60px 0;
