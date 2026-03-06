@@ -5,11 +5,14 @@ $cartItems = [];
 $cart = getCart();
 
 if ($cart) {
-    $productIds = array_column($cart, 'id');
+    $productIds = array_unique(array_column($cart, 'id'));
     $placeholders = implode(',', array_fill(0, count($productIds), '?'));
     $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
     $stmt->execute($productIds);
-    $products = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    $products = [];
+    while ($row = $stmt->fetch()) {
+        $products[$row['id']] = $row;
+    }
     
     foreach ($cart as $index => $item) {
         if (isset($products[$item['id']])) {
@@ -53,9 +56,9 @@ $total = 0;
                             <?= $item['color'] ? ' | ' . __('product.color') . ': ' . $item['color'] : '' ?>
                         </p>
                         <div class="quantity-input">
-                            <button type="button" class="quantity-btn" data-action="decrease">-</button>
+                            <button type="button" class="cart-quantity-btn" data-action="decrease" data-index="<?= $item['index'] ?>">-</button>
                             <input type="number" value="<?= $item['quantity'] ?>" min="1" readonly>
-                            <button type="button" class="quantity-btn" data-action="increase">+</button>
+                            <button type="button" class="cart-quantity-btn" data-action="increase" data-index="<?= $item['index'] ?>">+</button>
                         </div>
                         <p class="cart-item-price"><?= formatPrice($item['price'] * $item['quantity']) ?></p>
                     </div>

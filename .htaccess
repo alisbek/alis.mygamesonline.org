@@ -2,15 +2,16 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
     
-    RewriteCond %{REQUEST_URI} ^/([a-z]{2})/(.*)$
-    RewriteRule ^([^/]+)/(.*)$ $2?lang=$1 [L,QSA]
+    # Language prefix with path: /en/products.php -> products.php?lang=en
+    RewriteCond %{REQUEST_URI} ^/([a-z]{2})/(.+)$
+    RewriteRule ^([a-z]{2})/(.+)$ $2?lang=$1 [L,QSA]
+    
+    # Language prefix alone: /en/ or /en -> index.php?lang=en
+    RewriteRule ^([a-z]{2})/?$ index.php?lang=$1 [L,QSA]
 </IfModule>
 
 <FilesMatch "^\.">

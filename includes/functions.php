@@ -24,6 +24,12 @@ function loadLang($langCode) {
 
 function url($path = '', $lang = null) {
     $lang = $lang ?? getCurrentLang();
+    // Strip any existing language prefix from the path
+    $langCodes = array_keys(LANGUAGES);
+    $pattern = '/^\/(' . implode('|', $langCodes) . ')(\/|$)/';
+    $path = preg_replace($pattern, '/', $path);
+    // Normalize double slashes and trailing slash for root
+    $path = ($path === '/') ? '' : $path;
     $prefix = ($lang === DEFAULT_LANG) ? '' : '/' . $lang;
     return SITE_URL . $prefix . $path;
 }

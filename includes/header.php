@@ -14,9 +14,16 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <meta name="description" content="<?= __('meta.description') ?>">
     <title><?= __('meta.title') ?></title>
     <link rel="canonical" href="<?= SITE_URL . $_SERVER['REQUEST_URI'] ?>">
+    <?php
+    // Get the current page path without language prefix for hreflang alternates
+    $requestPath = $_SERVER['REQUEST_URI'];
+    $langCodes = array_keys(LANGUAGES);
+    $hreflangPath = preg_replace('/^\/(' . implode('|', $langCodes) . ')(\/|$)/', '/', $requestPath);
+    $hreflangPath = ($hreflangPath === '/') ? '' : $hreflangPath;
+    ?>
     <?php foreach (LANGUAGES as $code => $name): ?>
-        <?php if ($code !== DEFAULT_LANG): ?>
-    <link rel="alternate" hreflang="<?= $code ?>" href="<?= url($_SERVER['REQUEST_URI'], $code) ?>">
+        <?php if ($code !== $currentLang): ?>
+    <link rel="alternate" hreflang="<?= $code ?>" href="<?= url($hreflangPath, $code) ?>">
         <?php endif; ?>
     <?php endforeach; ?>
     <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css">
@@ -51,7 +58,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                             <?php if ($code === $currentLang): ?>
                                 <span class="lang-current"><?= strtoupper($code) ?></span>
                             <?php else: ?>
-                                <a href="?lang=<?= $code ?>" class="lang-link"><?= strtoupper($code) ?></a>
+                                <a href="<?= url($hreflangPath, $code) ?>" class="lang-link"><?= strtoupper($code) ?></a>
                             <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
