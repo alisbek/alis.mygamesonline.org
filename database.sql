@@ -524,8 +524,8 @@ INSERT INTO `products` (`category_id`, `name_pl`, `name_en`, `name_ru`, `name_de
 '["kapcie-haft-02.jpg","kapcie-haft-03.jpg"]',
 0, 0);
 
--- Insert admin user (password: admin123 - change immediately!)
+-- Insert admin user (login: asel, password: password - change in Admin > Settings)
 INSERT INTO `admin_users` (`username`, `password_hash`, `email`) VALUES
-    ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@feltee.com');
+    ('asel', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@feltee.com');
 
 SET FOREIGN_KEY_CHECKS = 1;

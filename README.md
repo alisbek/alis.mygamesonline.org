@@ -52,10 +52,10 @@ Image filenames in database.sql are placeholders. Update them in the admin panel
 ### 6. Default Admin Login
 
 - **URL**: `https://alis.mygamesonline.org/admin/login.php`
-- **Username**: `admin`
-- **Password**: `admin123`
+- **Username**: `asel`
+- **Password**: `password`
 
-⚠️ **Change the password immediately after first login!**
+⚠️ **Change the password immediately after first login in Admin -> Settings.**
 
 ## File Structure
 

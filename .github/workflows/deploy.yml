@@ -1,4 +1,4 @@
-name: Deploy via SFTP
+name: Deploy to GCP
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Server
+    name: Deploy to GCP VM
     runs-on: ubuntu-latest
 
     steps:
@@ -40,24 +40,33 @@ jobs:
           printf 'PAYU_CLIENT_SECRET=%s\n' "$PAYU_CLIENT_SECRET" >> .env
           printf 'PAYU_BASE_URL=%s\n' "$PAYU_BASE_URL" >> .env
 
-      - name: Deploy main files via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          port: ${{ secrets.FTP_PORT }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local_path: './*'
-          remote_path: '/'
-          sftp_only: true
-          delete_remote_files: false
-
-      - name: Upload dotfiles via SFTP
+      - name: Setup SSH key
         run: |
-          sudo apt-get install -y sshpass > /dev/null 2>&1
-          export SSHPASS='${{ secrets.FTP_PASSWORD }}'
-          sshpass -e sftp -o StrictHostKeyChecking=no -P ${{ secrets.FTP_PORT }} ${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }} <<SFTP
-          put .env /
-          put .htaccess /
-          bye
-          SFTP
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.GCP_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy files via rsync
+        run: |
+          rsync -avz --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.env' \
+            --exclude='.htaccess' \
+            --exclude='gcp-setup.ps1' \
+            --exclude='gcp-check.ps1' \
+            --exclude='gcp-server-setup.sh' \
+            --exclude='uploads/products/' \
+            --rsync-path="sudo rsync" \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }}:/var/www/feltee/
+
+      - name: Deploy .env, .htaccess and set permissions
+        run: |
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }}"
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            .env ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }}:/tmp/.env.deploy
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            .htaccess ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }}:/tmp/.htaccess.deploy
+          $SSH_CMD 'sudo mv /tmp/.env.deploy /var/www/feltee/.env && sudo mv /tmp/.htaccess.deploy /var/www/feltee/.htaccess && sudo chown -R www-data:www-data /var/www/feltee && sudo chmod 600 /var/www/feltee/.env'

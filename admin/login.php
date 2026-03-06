@@ -2,25 +2,40 @@
 require_once '../config/db.php';
 require_once '../includes/functions.php';
 
+$fixedUsername = 'asel';
+
 $currentLang = getCurrentLang();
 $lang = loadLang($currentLang);
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
+
+    // One-time migration: if legacy "admin" exists and "asel" doesn't, rename it.
+    $stmt = $pdo->prepare("SELECT id FROM admin_users WHERE username = ?");
+    $stmt->execute([$fixedUsername]);
+    $fixedUser = $stmt->fetch();
+    if (!$fixedUser) {
+        $stmt = $pdo->prepare("SELECT id FROM admin_users WHERE username = 'admin'");
+        $stmt->execute();
+        $legacyAdmin = $stmt->fetch();
+        if ($legacyAdmin) {
+            $stmt = $pdo->prepare("UPDATE admin_users SET username = ? WHERE id = ?");
+            $stmt->execute([$fixedUsername, $legacyAdmin['id']]);
+        }
+    }
     
-    if (empty($username) || empty($password)) {
-        $error = 'Please fill in all fields.';
+    if (empty($password)) {
+        $error = 'Please enter password.';
     } else {
         $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE username = ?");
-        $stmt->execute([$username]);
+        $stmt->execute([$fixedUsername]);
         $user = $stmt->fetch();
         
         if ($user && password_verify($password, $user['password_hash'])) {
             $_SESSION['admin_logged_in'] = true;
-            $_SESSION['admin_username'] = $user['username'];
+            $_SESSION['admin_username'] = $fixedUsername;
             $_SESSION['admin_id'] = $user['id'];
             header('Location: index.php');
             exit;
@@ -92,15 +107,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($error): ?>
             <div class="alert alert-error"><?= $error ?></div>
             <?php endif; ?>
-            
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required autofocus>
+
+            <div class="alert" style="margin-bottom:20px;background:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9;">
+                Login: <strong><?= htmlspecialchars($fixedUsername) ?></strong>
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required autofocus>
             </div>
             
             <button type="submit" class="btn btn-primary btn-lg">Login</button>

@@ -66,6 +66,7 @@ $menuItems = [
     'products.php' => __('admin.products'),
     'orders.php' => __('admin.orders'),
     'categories.php' => __('admin.categories'),
+    'settings.php' => 'Settings',
 ];
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
