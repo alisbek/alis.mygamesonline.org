@@ -1,4 +1,2 @@
 .env
 *.log
-uploads/products/*
-!uploads/products/.gitkeep

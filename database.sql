@@ -338,7 +338,7 @@ INSERT INTO `products` (`category_id`, `name_pl`, `name_en`, `name_ru`, `name_de
 '[]',
 '[{"name":"Black","code":"#222222"}]',
 'torba-crossbody-01.jpg',
-'["torba-crossbody-02.jpg","torba-crossbody-03.jpg","torba-crossbody-04.jpg"]',
+'["torba-crossbody-02.jpg","torba-crossbody-03.jpg"]',
 15, 1);
 
 -- Product 12: Kapcie Ala Too (nr3852849) - 357 PLN
