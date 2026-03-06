@@ -1,4 +1,7 @@
 <?php
+session_start();
+date_default_timezone_set('Asia/Bishkek');
+
 // Load .env file
 $envFile = __DIR__ . '/../.env';
 if (file_exists($envFile)) {
@@ -37,6 +40,3 @@ define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
 
 define('CURRENCY', 'PLN');
 define('CURRENCY_SYMBOL', 'zł');
-
-session_start();
-date_default_timezone_set('Asia/Bishkek');
