@@ -27,6 +27,10 @@ jobs:
           PAYU_CLIENT_ID: ${{ secrets.PAYU_CLIENT_ID }}
           PAYU_CLIENT_SECRET: ${{ secrets.PAYU_CLIENT_SECRET }}
           PAYU_BASE_URL: ${{ secrets.PAYU_BASE_URL }}
+          INPOST_API_TOKEN: ${{ secrets.INPOST_API_TOKEN }}
+          INPOST_ORG_ID: ${{ secrets.INPOST_ORG_ID }}
+          INPOST_BASE_URL: ${{ secrets.INPOST_BASE_URL }}
+          INPOST_GEOWIDGET_TOKEN: ${{ secrets.INPOST_GEOWIDGET_TOKEN }}
         run: |
           printf 'SITE_URL=%s\n' "$SITE_URL" > .env
           printf 'DB_HOST=%s\n' "$ENV_DB_HOST" >> .env
@@ -39,6 +43,10 @@ jobs:
           printf 'PAYU_CLIENT_ID=%s\n' "$PAYU_CLIENT_ID" >> .env
           printf 'PAYU_CLIENT_SECRET=%s\n' "$PAYU_CLIENT_SECRET" >> .env
           printf 'PAYU_BASE_URL=%s\n' "$PAYU_BASE_URL" >> .env
+          printf 'INPOST_API_TOKEN=%s\n' "$INPOST_API_TOKEN" >> .env
+          printf 'INPOST_ORG_ID=%s\n' "$INPOST_ORG_ID" >> .env
+          printf 'INPOST_BASE_URL=%s\n' "$INPOST_BASE_URL" >> .env
+          printf 'INPOST_GEOWIDGET_TOKEN=%s\n' "$INPOST_GEOWIDGET_TOKEN" >> .env
 
       - name: Setup SSH key
         run: |
@@ -70,3 +78,8 @@ jobs:
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             .htaccess ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }}:/tmp/.htaccess.deploy
           $SSH_CMD 'sudo mv /tmp/.env.deploy /var/www/feltee/.env && sudo mv /tmp/.htaccess.deploy /var/www/feltee/.htaccess && sudo chown -R www-data:www-data /var/www/feltee && sudo chmod 600 /var/www/feltee/.env'
+
+      - name: Run InPost database setup
+        run: |
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }}"
+          $SSH_CMD 'curl -s https://alis.mygamesonline.org/inpost-setup.php | php' || echo "Setup may have already run or needs manual execution"

@@ -6,7 +6,7 @@ $orderId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 // Query order from database to show payment status
 $order = null;
 if ($orderId) {
-    $stmt = $pdo->prepare("SELECT id, payment_method, payment_status, total FROM orders WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, payment_method, payment_status, total, delivery_method, inpost_point_name, inpost_tracking_number, shipping_cost FROM orders WHERE id = ?");
     $stmt->execute([$orderId]);
     $order = $stmt->fetch();
 }
@@ -36,6 +36,19 @@ if ($orderId) {
             
             <?php if ($orderId): ?>
             <p style="font-size:1.25rem;font-weight:600;margin:24px 0;"><?= sprintf(__('order.number'), $orderId) ?></p>
+            <?php endif; ?>
+            
+            <?php if ($order && $order['delivery_method'] === 'inpost'): ?>
+            <div class="inpost-success-info">
+                <p><strong><?= __('order.inpost_delivery') ?></strong></p>
+                <?php if (!empty($order['inpost_point_name'])): ?>
+                <p><span class="inpost-point-label"><?= __('order.inpost_point') ?>:</span> <?= htmlspecialchars($order['inpost_point_name']) ?></p>
+                <?php endif; ?>
+                <?php if (!empty($order['inpost_tracking_number'])): ?>
+                <p><span class="inpost-point-label"><?= __('order.inpost_tracking') ?>:</span> <?= htmlspecialchars($order['inpost_tracking_number']) ?></p>
+                <?php endif; ?>
+                <p style="margin-top:8px;font-size:0.9rem;color:var(--color-text-light);"><?= __('order.inpost_pickup_msg') ?></p>
+            </div>
             <?php endif; ?>
             
             <?php if ($order && $order['payment_status'] === 'paid'): ?>

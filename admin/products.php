@@ -41,6 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $descriptionFr = trim($_POST['description_fr'] ?? '');
         $sizes = $_POST['sizes'] ?? [];
         $colors = $_POST['colors'] ?? [];
+        $weightGrams = (int)($_POST['weight_grams'] ?? 0);
+        $lengthMm = (int)($_POST['length_mm'] ?? 0);
+        $widthMm = (int)($_POST['width_mm'] ?? 0);
+        $heightMm = (int)($_POST['height_mm'] ?? 0);
         
         if (empty($nameRu) || empty($nameEn) || empty($namePl) || $price <= 0) {
             $error = 'Please fill in all required fields.';
@@ -62,13 +66,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $colorsJson = json_encode($colors);
             
             if ($action === 'add') {
-                $stmt = $pdo->prepare("INSERT INTO products (category_id, name_ru, name_en, name_pl, name_de, name_fr, description_ru, description_en, description_pl, description_de, description_fr, price, sizes, colors, image, stock, featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $nameDe, $nameFr, $descriptionRu, $descriptionEn, $descriptionPl, $descriptionDe, $descriptionFr, $price, $sizesJson, $colorsJson, $image, $stock, $featured]);
+                $stmt = $pdo->prepare("INSERT INTO products (category_id, name_ru, name_en, name_pl, name_de, name_fr, description_ru, description_en, description_pl, description_de, description_fr, price, sizes, colors, image, stock, featured, weight_grams, length_mm, width_mm, height_mm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $nameDe, $nameFr, $descriptionRu, $descriptionEn, $descriptionPl, $descriptionDe, $descriptionFr, $price, $sizesJson, $colorsJson, $image, $stock, $featured, $weightGrams, $lengthMm, $widthMm, $heightMm]);
                 $success = 'Product added successfully.';
             } else {
                 $id = (int)$_POST['id'];
-                $stmt = $pdo->prepare("UPDATE products SET category_id=?, name_ru=?, name_en=?, name_pl=?, name_de=?, name_fr=?, description_ru=?, description_en=?, description_pl=?, description_de=?, description_fr=?, price=?, sizes=?, colors=?, image=?, stock=?, featured=? WHERE id=?");
-                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $nameDe, $nameFr, $descriptionRu, $descriptionEn, $descriptionPl, $descriptionDe, $descriptionFr, $price, $sizesJson, $colorsJson, $image, $stock, $featured, $id]);
+                $stmt = $pdo->prepare("UPDATE products SET category_id=?, name_ru=?, name_en=?, name_pl=?, name_de=?, name_fr=?, description_ru=?, description_en=?, description_pl=?, description_de=?, description_fr=?, price=?, sizes=?, colors=?, image=?, stock=?, featured=?, weight_grams=?, length_mm=?, width_mm=?, height_mm=? WHERE id=?");
+                $stmt->execute([$categoryId, $nameRu, $nameEn, $namePl, $nameDe, $nameFr, $descriptionRu, $descriptionEn, $descriptionPl, $descriptionDe, $descriptionFr, $price, $sizesJson, $colorsJson, $image, $stock, $featured, $weightGrams, $lengthMm, $widthMm, $heightMm, $id]);
                 $success = 'Product updated successfully.';
                 header('Location: products.php');
                 exit;
@@ -213,6 +217,25 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         <div class="form-group">
                             <label>Stock</label>
                             <input type="number" name="stock" min="0" value="<?= $editProduct['stock'] ?? 0 ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-row">
+                        <div class="form-group">
+                            <label>Weight (grams)</label>
+                            <input type="number" name="weight_grams" min="0" value="<?= $editProduct['weight_grams'] ?? 0 ?>" placeholder="e.g. 300">
+                        </div>
+                        <div class="form-group">
+                            <label>Length (mm)</label>
+                            <input type="number" name="length_mm" min="0" value="<?= $editProduct['length_mm'] ?? 0 ?>" placeholder="e.g. 300">
+                        </div>
+                        <div class="form-group">
+                            <label>Width (mm)</label>
+                            <input type="number" name="width_mm" min="0" value="<?= $editProduct['width_mm'] ?? 0 ?>" placeholder="e.g. 200">
+                        </div>
+                        <div class="form-group">
+                            <label>Height (mm)</label>
+                            <input type="number" name="height_mm" min="0" value="<?= $editProduct['height_mm'] ?? 0 ?>" placeholder="e.g. 80">
                         </div>
                     </div>
                     

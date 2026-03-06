@@ -56,3 +56,16 @@ $payuClientSecret = getenv('PAYU_CLIENT_SECRET');
 if (!defined('PAYU_CLIENT_SECRET')) define('PAYU_CLIENT_SECRET', $payuClientSecret ? $payuClientSecret : '');
 $payuBaseUrl = getenv('PAYU_BASE_URL');
 if (!defined('PAYU_BASE_URL')) define('PAYU_BASE_URL', $payuBaseUrl ? $payuBaseUrl : 'https://secure.snd.payu.com');
+
+// InPost ShipX API
+$inpostApiToken = getenv('INPOST_API_TOKEN');
+if (!defined('INPOST_API_TOKEN')) define('INPOST_API_TOKEN', $inpostApiToken ? $inpostApiToken : '');
+$inpostOrgId = getenv('INPOST_ORG_ID');
+if (!defined('INPOST_ORG_ID')) define('INPOST_ORG_ID', $inpostOrgId ? $inpostOrgId : '');
+$inpostBaseUrl = getenv('INPOST_BASE_URL');
+if (!defined('INPOST_BASE_URL')) define('INPOST_BASE_URL', $inpostBaseUrl ? $inpostBaseUrl : 'https://sandbox-api-shipx-pl.easypack24.net');
+$inpostGeowidgetToken = getenv('INPOST_GEOWIDGET_TOKEN');
+if (!defined('INPOST_GEOWIDGET_TOKEN')) define('INPOST_GEOWIDGET_TOKEN', $inpostGeowidgetToken ? $inpostGeowidgetToken : '');
+
+// InPost shipping cost (PLN)
+if (!defined('INPOST_SHIPPING_COST')) define('INPOST_SHIPPING_COST', 12.99);

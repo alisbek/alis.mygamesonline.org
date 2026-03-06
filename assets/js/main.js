@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     initCart();
     initFilters();
+    initInpostGeowidget();
 });
 
 function initCart() {
@@ -92,4 +93,103 @@ function initFilters() {
             window.location.href = url.toString();
         });
     });
+}
+
+function initInpostGeowidget() {
+    var deliveryRadios = document.querySelectorAll('input[name="delivery"]');
+    var geowidgetContainer = document.getElementById('inpost-geowidget-container');
+    var selectedPointDiv = document.getElementById('inpost-selected-point');
+    var selectPrompt = document.getElementById('inpost-select-prompt');
+    var hiddenPointId = document.getElementById('inpost_point_id');
+    var hiddenPointName = document.getElementById('inpost_point_name');
+    var summaryShipping = document.getElementById('cart-summary-shipping-value');
+    var summaryTotal = document.getElementById('cart-summary-grand-total');
+    var subtotalValue = document.getElementById('cart-summary-subtotal-value');
+    
+    if (!geowidgetContainer || deliveryRadios.length === 0) return;
+    
+    var shippingCost = parseFloat(geowidgetContainer.dataset.shippingCost || '12.99');
+    var subtotal = parseFloat(subtotalValue ? subtotalValue.dataset.value : '0');
+    var freeLabel = geowidgetContainer.dataset.freeLabel || 'Free';
+    
+    function updateShippingDisplay(delivery) {
+        if (!summaryShipping || !summaryTotal) return;
+        if (delivery === 'inpost') {
+            summaryShipping.textContent = shippingCost.toFixed(2) + ' zł';
+            summaryShipping.className = 'shipping-cost';
+            summaryTotal.textContent = (subtotal + shippingCost).toFixed(2) + ' zł';
+        } else {
+            summaryShipping.textContent = freeLabel;
+            summaryShipping.className = 'shipping-free';
+            summaryTotal.textContent = subtotal.toFixed(2) + ' zł';
+        }
+    }
+    
+    function showGeowidget(show) {
+        if (show) {
+            geowidgetContainer.classList.add('active');
+            if (selectPrompt && !hiddenPointId.value) {
+                selectPrompt.classList.add('active');
+            }
+        } else {
+            geowidgetContainer.classList.remove('active');
+            if (selectPrompt) selectPrompt.classList.remove('active');
+        }
+    }
+    
+    deliveryRadios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            var isInpost = this.value === 'inpost';
+            showGeowidget(isInpost);
+            updateShippingDisplay(this.value);
+        });
+        
+        // Initialize on page load if already checked
+        if (radio.checked && radio.value === 'inpost') {
+            showGeowidget(true);
+            updateShippingDisplay('inpost');
+        }
+    });
+    
+    // Initialize shipping display for currently selected delivery
+    var checkedRadio = document.querySelector('input[name="delivery"]:checked');
+    if (checkedRadio) {
+        updateShippingDisplay(checkedRadio.value);
+    }
+    
+    // Listen for Geowidget point selection
+    var geowidgetEl = document.querySelector('inpost-geowidget');
+    if (geowidgetEl) {
+        geowidgetEl.addEventListener('onpoint', function(e) {
+            var point = e.detail;
+            if (!point) return;
+            
+            hiddenPointId.value = point.name;
+            hiddenPointName.value = point.name + ' - ' + (point.address ? (point.address.line1 || '') + ', ' + (point.address.line2 || '') : '');
+            
+            // Show selected point
+            if (selectedPointDiv) {
+                var pointNameSpan = selectedPointDiv.querySelector('.inpost-point-name');
+                if (pointNameSpan) {
+                    pointNameSpan.textContent = hiddenPointName.value;
+                }
+                selectedPointDiv.classList.add('active');
+            }
+            
+            // Hide prompt
+            if (selectPrompt) {
+                selectPrompt.classList.remove('active');
+            }
+        });
+    }
+    
+    // Change button to reopen geowidget
+    var changeBtn = document.getElementById('inpost-change-btn');
+    if (changeBtn) {
+        changeBtn.addEventListener('click', function() {
+            selectedPointDiv.classList.remove('active');
+            geowidgetContainer.classList.add('active');
+            if (selectPrompt) selectPrompt.classList.add('active');
+        });
+    }
 }

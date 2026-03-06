@@ -1439,3 +1439,242 @@ input:valid:not(:placeholder-shown) {
 .fade-in {
     animation: fadeIn 0.3s ease forwards;
 }
+
+/* ===== InPost Paczkomat Integration ===== */
+
+.delivery-option-inpost {
+    position: relative;
+}
+
+.delivery-option-inpost .radio-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.inpost-delivery-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.inpost-delivery-name {
+    font-weight: 600;
+}
+
+.inpost-delivery-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+}
+
+.inpost-shipping-cost {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.inpost-geowidget-container {
+    display: none;
+    margin-top: 16px;
+    border: 2px solid #FFCD00;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.inpost-geowidget-container.active {
+    display: block;
+}
+
+.inpost-geowidget-container inpost-geowidget {
+    display: block;
+    width: 100%;
+    height: 420px;
+}
+
+.inpost-selected-point {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: var(--color-success-bg, #f0fdf4);
+    border: 1px solid var(--color-success);
+    border-radius: 8px;
+    color: var(--color-success);
+    font-weight: 500;
+}
+
+.inpost-selected-point.active {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.inpost-selected-point .inpost-point-name {
+    font-weight: 700;
+}
+
+.inpost-selected-point .inpost-change-btn {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.inpost-select-prompt {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: #FFFBEB;
+    border: 1px solid #FFCD00;
+    border-radius: 8px;
+    color: #92400E;
+    font-size: 0.9rem;
+}
+
+.inpost-select-prompt.active {
+    display: block;
+}
+
+/* Cart summary with shipping */
+.cart-summary-subtotal,
+.cart-summary-shipping {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+}
+
+.cart-summary-shipping .shipping-free {
+    color: var(--color-success);
+    font-weight: 500;
+}
+
+.cart-summary-shipping .shipping-cost {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Admin InPost section */
+.inpost-admin-section {
+    margin-top: 24px;
+    padding: 20px;
+    background: #FFFBEB;
+    border: 1px solid #FFCD00;
+    border-radius: 8px;
+}
+
+.inpost-admin-section h3 {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.inpost-admin-section h3::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: #FFCD00;
+    border-radius: 4px;
+}
+
+.inpost-admin-detail {
+    margin-bottom: 8px;
+}
+
+.inpost-admin-detail strong {
+    display: inline-block;
+    min-width: 140px;
+}
+
+.inpost-admin-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.inpost-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid #FFCD00;
+    background: #FFCD00;
+    color: #1a1a1a;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.inpost-action-btn:hover {
+    background: #e6b800;
+}
+
+.inpost-action-btn.secondary {
+    background: #fff;
+    border-color: #d1d5db;
+    color: var(--color-text);
+}
+
+.inpost-action-btn.secondary:hover {
+    background: var(--color-bg-alt);
+}
+
+.inpost-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.inpost-status-created { background: #e0f2fe; color: #0369a1; }
+.inpost-status-confirmed { background: #dbeafe; color: #1d4ed8; }
+.inpost-status-dispatched { background: #fef3c7; color: #92400e; }
+.inpost-status-collected { background: #d1fae5; color: #065f46; }
+.inpost-status-delivered { background: #d1fae5; color: #065f46; }
+.inpost-status-returned { background: #fee2e2; color: #991b1b; }
+
+/* InPost delivery info on order success page */
+.inpost-success-info {
+    margin: 16px 0 24px;
+    padding: 16px 20px;
+    background: #FFFBEB;
+    border: 1px solid #FFCD00;
+    border-radius: 8px;
+    text-align: left;
+    display: inline-block;
+}
+
+.inpost-success-info p {
+    margin: 4px 0;
+}
+
+.inpost-success-info .inpost-point-label {
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .inpost-geowidget-container inpost-geowidget {
+        height: 350px;
+    }
+    
+    .inpost-admin-actions {
+        flex-direction: column;
+    }
+    
+    .inpost-action-btn {
+        justify-content: center;
+    }
+}

@@ -50,19 +50,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
     $delivery = sanitize($_POST['delivery'] ?? '');
     $payment = sanitize($_POST['payment'] ?? '');
     $notes = sanitize($_POST['notes'] ?? '');
+    $inpostPointId = sanitize($_POST['inpost_point_id'] ?? '');
+    $inpostPointName = sanitize($_POST['inpost_point_name'] ?? '');
     
     // Validate required fields
     if (empty($name) || empty($phone) || empty($delivery) || empty($payment)) {
+        $error = __('checkout.error_required');
+    } elseif ($delivery === 'inpost' && empty($inpostPointId)) {
+        $error = __('checkout.error_inpost_point');
+    } elseif (!in_array($delivery, ['pickup', 'courier', 'post', 'inpost'])) {
         $error = __('checkout.error_required');
     } elseif (!in_array($payment, ['cash', 'bank_transfer', 'payu'])) {
         $error = __('checkout.error_required');
     } else {
         try {
+            // Calculate shipping cost
+            $shippingCost = ($delivery === 'inpost') ? INPOST_SHIPPING_COST : 0;
+            $grandTotal = $total + $shippingCost;
+            
             // Wrap order creation in a transaction
             $pdo->beginTransaction();
             
-            $stmt = $pdo->prepare("INSERT INTO orders (customer_name, phone, email, address, city, postal_code, delivery_method, payment_method, payment_status, total, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, 'new')");
-            $stmt->execute([$name, $phone, $email, $address, $city, $postal, $delivery, $payment, $total, $notes]);
+            $stmt = $pdo->prepare("INSERT INTO orders (customer_name, phone, email, address, city, postal_code, delivery_method, payment_method, payment_status, total, shipping_cost, inpost_point_id, inpost_point_name, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, 'new')");
+            $stmt->execute([$name, $phone, $email, $address, $city, $postal, $delivery, $payment, $grandTotal, $shippingCost, $inpostPointId ?: null, $inpostPointName ?: null, $notes]);
             
             $orderId = $pdo->lastInsertId();
             
@@ -94,6 +104,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                     ];
                 }
                 
+                // Add shipping as a line item if applicable
+                if ($shippingCost > 0) {
+                    $payuProducts[] = [
+                        'name' => 'InPost Paczkomat',
+                        'unitPrice' => (string)((int)($shippingCost * 100)),
+                        'quantity' => '1',
+                    ];
+                }
+                
                 // Parse buyer name into first/last
                 $nameParts = explode(' ', $name, 2);
                 $firstName = $nameParts[0];
@@ -108,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                 $orderData = [
                     'orderId' => $extOrderId,
                     'description' => 'Feltee Order #' . $orderId,
-                    'totalAmount' => (int)($total * 100), // Convert PLN to grosze
+                    'totalAmount' => (int)($grandTotal * 100), // Convert PLN to grosze
                     'customerIp' => payuGetCustomerIp(),
                     'buyer' => [
                         'email' => $email ?: 'customer@feltee.com',
@@ -152,8 +171,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                 $body .= "Email: $email\n";
                 $body .= "Address: $address, $city $postal\n";
                 $body .= "Delivery: $delivery\n";
+                if ($delivery === 'inpost') {
+                    $body .= "Paczkomat: $inpostPointId - $inpostPointName\n";
+                    $body .= "Shipping: " . number_format($shippingCost, 2) . " PLN\n";
+                }
                 $body .= "Payment: $payment\n";
-                $body .= "Total: " . formatPrice($total) . "\n\n";
+                $body .= "Total: " . formatPrice($grandTotal) . "\n\n";
                 $body .= "Items:\n";
                 
                 foreach ($cartItems as $item) {
@@ -233,7 +256,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                             <input type="radio" name="delivery" value="post" <?= ($_POST['delivery'] ?? '') === 'post' ? 'checked' : '' ?>>
                             <?= __('checkout.delivery.post') ?>
                         </label>
+                        <label class="radio-label delivery-option-inpost">
+                            <input type="radio" name="delivery" value="inpost" <?= ($_POST['delivery'] ?? '') === 'inpost' ? 'checked' : '' ?>>
+                            <span class="inpost-delivery-info">
+                                <span class="inpost-delivery-name"><?= __('checkout.delivery.inpost') ?></span>
+                                <span class="inpost-delivery-desc"><?= __('checkout.delivery.inpost_desc') ?></span>
+                                <span class="inpost-shipping-cost"><?= number_format(INPOST_SHIPPING_COST, 2) ?> zł</span>
+                            </span>
+                        </label>
                     </div>
+                </div>
+                
+                <input type="hidden" id="inpost_point_id" name="inpost_point_id" value="<?= htmlspecialchars($_POST['inpost_point_id'] ?? '') ?>">
+                <input type="hidden" id="inpost_point_name" name="inpost_point_name" value="<?= htmlspecialchars($_POST['inpost_point_name'] ?? '') ?>">
+                
+                <?php
+                // Determine Geowidget URL based on sandbox vs production
+                $geowidgetUrl = (strpos(INPOST_BASE_URL, 'sandbox') !== false)
+                    ? 'https://sandbox-easy-geowidget-sdk.easypack24.net'
+                    : 'https://geowidget.inpost.pl';
+                ?>
+                
+                <div id="inpost-geowidget-container" class="inpost-geowidget-container" data-shipping-cost="<?= INPOST_SHIPPING_COST ?>" data-free-label="<?= __('checkout.shipping_free') ?>">
+                    <link rel="stylesheet" href="<?= $geowidgetUrl ?>/easypack.css" />
+                <script src="<?= $geowidgetUrl ?>/easypack.js"></script>
+                <script>
+                function onInpostPointSelected(point) {
+                    var event = new CustomEvent('onpoint', { detail: point });
+                    var gw = document.querySelector('inpost-geowidget');
+                    if (gw) gw.dispatchEvent(event);
+                }
+                </script>
+                <inpost-geowidget
+                        onpoint="onInpostPointSelected"
+                        token="<?= INPOST_GEOWIDGET_TOKEN ?>"
+                        language="<?= $currentLang === 'pl' ? 'pl' : 'en' ?>"
+                        config="parcelCollect">
+                    </inpost-geowidget>
+                </div>
+                
+                <div id="inpost-select-prompt" class="inpost-select-prompt">
+                    <?= __('checkout.inpost_select_point') ?>
+                </div>
+                
+                <div id="inpost-selected-point" class="inpost-selected-point">
+                    <span><span class="inpost-point-name"></span></span>
+                    <button type="button" id="inpost-change-btn" class="inpost-change-btn"><?= __('checkout.inpost_change') ?></button>
                 </div>
                 
                 <div class="form-group">
@@ -291,9 +359,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
                     <span><?= formatPrice($item['price'] * $item['quantity']) ?></span>
                 </div>
                 <?php endforeach; ?>
+                <div class="cart-summary-subtotal">
+                    <span><?= __('checkout.subtotal') ?></span>
+                    <span id="cart-summary-subtotal-value" data-value="<?= $total ?>"><?= formatPrice($total) ?></span>
+                </div>
+                <div class="cart-summary-shipping">
+                    <span><?= __('checkout.shipping') ?></span>
+                    <span id="cart-summary-shipping-value" class="shipping-free"><?= __('checkout.shipping_free') ?></span>
+                </div>
                 <div class="cart-summary-row cart-summary-total">
-                    <span><?= __('cart.total') ?></span>
-                    <span><?= formatPrice($total) ?></span>
+                    <span><?= __('checkout.total') ?></span>
+                    <span id="cart-summary-grand-total"><?= formatPrice($total) ?></span>
                 </div>
                 
                 <a href="<?= url('/cart.php') ?>" style="display:block;text-align:center;margin-top:16px;"><?= __('checkout.edit_cart') ?></a>

@@ -1,6 +1,7 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/functions.php';
+require_once '../includes/inpost.php';
 
 $currentLang = getCurrentLang();
 $lang = loadLang($currentLang);
@@ -107,6 +108,14 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             <div class="alert alert-success" style="margin-bottom:20px;">Order status updated.</div>
             <?php endif; ?>
             
+            <?php if (isset($_GET['inpost_msg'])): ?>
+            <div class="alert alert-success" style="margin-bottom:20px;"><?= htmlspecialchars($_GET['inpost_msg']) ?></div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['inpost_error'])): ?>
+            <div class="alert alert-error" style="margin-bottom:20px;"><?= htmlspecialchars($_GET['inpost_error']) ?></div>
+            <?php endif; ?>
+            
             <?php if ($viewOrder): ?>
             <div class="admin-section">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
@@ -125,15 +134,77 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         <p><strong>Postal Code:</strong> <?= htmlspecialchars($viewOrder['postal_code'] ?: '-') ?></p>
                         
                         <h3 style="margin:24px 0 16px;">Order Details</h3>
-                        <p><strong>Delivery:</strong> <?= ucfirst($viewOrder['delivery_method']) ?></p>
+                        <p><strong>Delivery:</strong> <?= $viewOrder['delivery_method'] === 'inpost' ? 'InPost Paczkomat' : ucfirst($viewOrder['delivery_method']) ?></p>
                         <p><strong>Payment:</strong> <?= ucfirst(str_replace('_', ' ', $viewOrder['payment_method'])) ?></p>
                         <p><strong>Payment Status:</strong> <span class="status-badge status-<?= $viewOrder['payment_status'] ?? 'pending' ?>"><?= ucfirst($viewOrder['payment_status'] ?? 'pending') ?></span></p>
                         <?php if (!empty($viewOrder['payu_order_id'])): ?>
                         <p><strong>PayU Order ID:</strong> <?= htmlspecialchars($viewOrder['payu_order_id']) ?></p>
                         <?php endif; ?>
                         <p><strong>Total:</strong> <?= formatPrice($viewOrder['total']) ?></p>
+                        <?php if (!empty($viewOrder['shipping_cost']) && $viewOrder['shipping_cost'] > 0): ?>
+                        <p><strong>Shipping Cost:</strong> <?= formatPrice($viewOrder['shipping_cost']) ?></p>
+                        <?php endif; ?>
                         <?php if ($viewOrder['notes']): ?>
                         <p><strong>Notes:</strong> <?= nl2br(htmlspecialchars($viewOrder['notes'])) ?></p>
+                        <?php endif; ?>
+                        
+                        <?php if ($viewOrder['delivery_method'] === 'inpost'): ?>
+                        <div class="inpost-admin-section">
+                            <h3>InPost Paczkomat Shipping</h3>
+                            
+                            <div class="inpost-admin-detail">
+                                <strong>Paczkomat:</strong> <?= htmlspecialchars($viewOrder['inpost_point_id'] ?? '-') ?>
+                            </div>
+                            <?php if (!empty($viewOrder['inpost_point_name'])): ?>
+                            <div class="inpost-admin-detail">
+                                <strong>Point Name:</strong> <?= htmlspecialchars($viewOrder['inpost_point_name']) ?>
+                            </div>
+                            <?php endif; ?>
+                            <?php if (!empty($viewOrder['inpost_shipment_id'])): ?>
+                            <div class="inpost-admin-detail">
+                                <strong>Shipment ID:</strong> <?= htmlspecialchars($viewOrder['inpost_shipment_id']) ?>
+                            </div>
+                            <?php endif; ?>
+                            <?php if (!empty($viewOrder['inpost_tracking_number'])): ?>
+                            <div class="inpost-admin-detail">
+                                <strong>Tracking:</strong> <?= htmlspecialchars($viewOrder['inpost_tracking_number']) ?>
+                            </div>
+                            <?php endif; ?>
+                            <?php if (!empty($viewOrder['inpost_status'])): ?>
+                            <div class="inpost-admin-detail">
+                                <strong>Status:</strong> 
+                                <span class="inpost-status-badge inpost-status-<?= htmlspecialchars($viewOrder['inpost_status']) ?>">
+                                    <?= inpostStatusLabel($viewOrder['inpost_status']) ?>
+                                </span>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <div class="inpost-admin-actions">
+                                <?php if (empty($viewOrder['inpost_shipment_id'])): ?>
+                                <form method="post" action="inpost-actions.php" style="display:inline;">
+                                    <input type="hidden" name="action" value="create-shipment">
+                                    <input type="hidden" name="order_id" value="<?= $viewOrder['id'] ?>">
+                                    <button type="submit" class="inpost-action-btn">Create Shipment</button>
+                                </form>
+                                <?php else: ?>
+                                <form method="post" action="inpost-actions.php" style="display:inline;">
+                                    <input type="hidden" name="action" value="get-label">
+                                    <input type="hidden" name="order_id" value="<?= $viewOrder['id'] ?>">
+                                    <button type="submit" class="inpost-action-btn">Download Label</button>
+                                </form>
+                                <form method="post" action="inpost-actions.php" style="display:inline;">
+                                    <input type="hidden" name="action" value="create-dispatch">
+                                    <input type="hidden" name="order_id" value="<?= $viewOrder['id'] ?>">
+                                    <button type="submit" class="inpost-action-btn">Schedule Pickup</button>
+                                </form>
+                                <form method="post" action="inpost-actions.php" style="display:inline;">
+                                    <input type="hidden" name="action" value="refresh-status">
+                                    <input type="hidden" name="order_id" value="<?= $viewOrder['id'] ?>">
+                                    <button type="submit" class="inpost-action-btn secondary">Refresh Status</button>
+                                </form>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                         <?php endif; ?>
                     </div>
                     
@@ -218,6 +289,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             <th>Customer</th>
                             <th>Phone</th>
                             <th>Total</th>
+                            <th>Delivery</th>
                             <th>Payment</th>
                             <th>Pay Status</th>
                             <th>Status</th>
@@ -232,6 +304,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             <td><?= htmlspecialchars($order['customer_name']) ?></td>
                             <td><?= htmlspecialchars($order['phone']) ?></td>
                             <td><?= formatPrice($order['total']) ?></td>
+                            <td><?= $order['delivery_method'] === 'inpost' ? '<span style="color:#92400e;font-weight:600;">InPost</span>' : ucfirst($order['delivery_method']) ?></td>
                             <td><?= ucfirst(str_replace('_', ' ', $order['payment_method'])) ?></td>
                             <td><span class="status-badge status-<?= $order['payment_status'] ?? 'pending' ?>"><?= ucfirst($order['payment_status'] ?? 'pending') ?></span></td>
                             <td><span class="status-badge status-<?= $order['status'] ?>"><?= ucfirst($order['status']) ?></span></td>
